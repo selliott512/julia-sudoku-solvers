@@ -3,7 +3,7 @@
 # and sorted alphabetically. They each have the minimum number of hints (17),
 # so they should be difficult. Referencing page:
 #   http://staffhome.ecm.uwa.edu.au/~00013890/sudokumin.php
-# Licensed is CCA 2.5.
+# License is CCA 2.5.
 #
 # Bash one liner to convert to 1000 separate puzzle files that this program can
 # read:
