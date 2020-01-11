@@ -5,11 +5,12 @@
 #   http://staffhome.ecm.uwa.edu.au/~00013890/sudokumin.php
 # License is CCA 2.5.
 #
-# Bash one liner to convert to 1000 separate puzzle files that this program can
-# read:
-#   out_dir=/tmp/suds; mkdir -p "$out_dir"; pn=0; for l in $(<1000-17-hint-sudokus.txt); do if [[ ${#l} -ne 81 ]]; then continue; fi; l=${l//0/.}; for ((r=0; r < 9; r++)); do echo ${l:9*$r:3} ${l:9*r+3:3} ${l:9*r+6:3}; if [[ (r -eq 2) || (r -eq 5) ]]; then echo; fi; done > $(printf /tmp/suds/%03d.sud $pn); let ++pn; done
+# This Bash one liner converts these 1000 puzzles to separate files so that
+# this program can read them. For similar files, such as
+# 100-17-hint-easy-sudokus.txt, adjust in_file and out_dir as need be:
+#   in_file=1000-17-hint-sudokus.txt out_dir=/tmp/suds; mkdir -p "$out_dir"; pn=0; for l in $(<"$in_file"); do if [[ ${#l} -ne 81 ]]; then continue; fi; l=${l//0/.}; for ((r=0; r < 9; r++)); do echo ${l:9*$r:3} ${l:9*r+3:3} ${l:9*r+6:3}; if [[ (r -eq 2) || (r -eq 5) ]]; then echo; fi; done > $(printf "$out_dir"/%03d.sud $pn); let ++pn; done
 # To check the above:
-#   sha1sum /tmp/suds/*.sud | sha1sum 
+#   sha1sum /tmp/suds/*.sud | sha1sum
 #   ebe5d8d5f1371d2880efb1f31ba9fc6b0f1ade0f  -
 
 000000021004090000070000030100203000500800000006000000200000600000060400030000000
