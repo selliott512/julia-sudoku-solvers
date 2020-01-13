@@ -9,6 +9,12 @@
 using Dates
 using Printf
 
+# Sort a 2D array of column vectors (dimension 2). This wrapper for sortslices()
+# seems to improve performance by having an explicit return value.
+function sort_column_vectors(sud_ones::Array{Int64,2})::Array{Int64,2}
+    return sortslices(sud_ones, dims=2)
+end
+
 # Constrain to the value at row and col.
 function sud_apply_constraint(sud::Array{Int16,2}, row::Int64, col::Int64)
     val = sud[row, col]
@@ -87,7 +93,7 @@ end
 # [order, row, col]. The assumption is that it is best to consider the most
 # constrained cells first followed by a consistent order so that each attempt
 # is maximally constrained by the existing partial solution.
-function sud_get_best_order(sud::Array{Int16,2})
+function sud_get_preferred_order(sud::Array{Int16,2})::Array{Int64,2}
     sud_ones = zeros(Int64, 3, 81)
     i = 1
     for c = 1:9
@@ -100,7 +106,7 @@ function sud_get_best_order(sud::Array{Int16,2})
 end
 
 # Return true if a sudoku is solved (exactly one digit per cell).
-function sud_is_solved(sud::Array{Int16,2})
+function sud_is_solved(sud::Array{Int16,2})::Bool
     for c = 1:9
         for r = 1:9
             val = sud[r, c]
@@ -115,7 +121,7 @@ end
 # Check if a sudoku is valid. It is valid if all of the cells are non-zero and
 # if all cells that have exactly one digit do not conflict with any other cells.
 # Digit cells do not conflict with the 0 digit (bit #0 encoded as 1).
-function sud_is_valid(sud::Array{Int16,2})
+function sud_is_valid(sud::Array{Int16,2})::Bool
     for c = 1:9
         for r = 1:9
             val = sud[r, c]
@@ -136,7 +142,7 @@ end
 # found where there are no digits. The other cell being compared to having a
 # value of 1 (bit #0 used for partial solutions) is valid. The value at row, col
 # must be a specific digit (exactly one bit set, not bit #0).
-function sud_is_valid(sud::Array{Int16,2}, row::Int64, col::Int64)
+function sud_is_valid(sud::Array{Int16,2}, row::Int64, col::Int64)::Bool
     val = sud[row, col]
 
     # Check if conflicting in current col. This is done first to search in
@@ -208,7 +214,7 @@ function sud_print_full(sud::Array{Int16,2})
 end
 
 # Read a sudoku from a file.
-function sud_read(path::String)
+function sud_read(path::String)::Array{Int16,2}
     sud = zeros(Int16, 9, 9)
 
     # A cell where all values are possible, so bits 1 - 9 are set.
@@ -245,10 +251,10 @@ function sud_solve(sud::Array{Int16,2})
     # Get a 3 x 81 array consisting of column vectors [ones, row, col] where
     # "ones" is a count of the number of bits sets. Sort in order to work with
     # the most constrained cells first.
-    sud_ones = sud_get_best_order(sud)
+    sud_ones = sud_get_preferred_order(sud)
 
-    # For some reason simply assigning makes it much slower.
-    sud_ones[:, :] = sortslices(sud_ones, dims=2)
+    # Sort to preferred order.
+    sud_ones = sort_column_vectors(sud_ones)
 
     # Our tentative solution to be filled with backtracking values subject to
     # the allowed values found above. Ones are used since 1 corresponds to
@@ -330,28 +336,6 @@ function sud_solves(paths::Array{String,1}, verbose::Bool)
             println("Solved  ", path, " in ", now() - before)
         end
         last_path = path
-    end
-end
-
-# Step forward or backward to the next non-fixed location. Return zeros if
-# such a location can not be found. The step is column major order.
-function sud_step(sud::Array{Int16,2}, row::Int64, col::Int64, inc::Int64)
-    while true
-        row += inc
-        if row < 1
-            row = 9
-            col -= 1
-        elseif row > 9
-            row = 1
-            col += 1
-        end
-        if col < 1 || col > 9
-            # 0 for an invalid value.
-            return 0, 0
-        end
-        if !fixed[row, col]
-            return row, col
-        end
     end
 end
 
