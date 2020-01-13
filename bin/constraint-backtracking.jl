@@ -6,6 +6,7 @@
 
 # Use constraints to determine which values are possible, then use backtracking.
 
+using Dates
 using Printf
 
 # Constrain to the value at row and col.
@@ -306,7 +307,7 @@ function sud_solve(sud::Array{Int16,2})
 end
 
 # Solve multiple sodoku puzzles given their paths.
-function sud_solves(paths::Array{String,1})
+function sud_solves(paths::Array{String,1}, verbose::Bool)
     first = true
     last_path = ""
     sud = zeros(Int8, 9, 9)
@@ -320,7 +321,14 @@ function sud_solves(paths::Array{String,1})
         if path != last_path
             sud = sud_read(path)
         end
+        if verbose
+            println("Solving ", path)
+            before = now()
+        end
         sud_solve(sud)
+        if verbose
+            println("Solved  ", path, " in ", now() - before)
+        end
         last_path = path
     end
 end
@@ -360,4 +368,12 @@ if length(ARGS) == 0 || ARGS[1] == "-h"
     exit(0)
 end
 
-sud_solves(ARGS)
+if ARGS[1] == "-v"
+    verbose = true
+    args = ARGS[2:length(ARGS)]
+else
+    verbose = false
+    args = ARGS
+end
+
+sud_solves(args, verbose)
